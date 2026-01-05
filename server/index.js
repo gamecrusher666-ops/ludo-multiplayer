@@ -2,13 +2,20 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { v4 as uuidv4 } from 'uuid';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
-app.use(express.static('../client'));
+// Serve static client files from absolute path to avoid relative path issues
+const clientPath = path.join(__dirname, '..', 'client');
+app.use(express.static(clientPath));
 
 // Redirect root to the multiplayer lobby and quiet favicon 404s
 app.get('/', (req, res) => {
