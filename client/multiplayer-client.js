@@ -142,6 +142,7 @@ socket.on('turnEnded', (data) => {
     console.log(`Turn ended, next player: ${data.nextPlayerIndex}`);
     const turnDisplay = document.getElementById('turn-display');
     const nextColor = activeColors[data.nextPlayerIndex] || gameState.colors[data.nextPlayerIndex];
+    gameState.currentPlayer = data.nextPlayerIndex; // keep local state in sync
     turnDisplay.textContent = `${nextColor.toUpperCase()}'s turn`;
     document.getElementById('dice-value').textContent = '-';
     
@@ -349,6 +350,7 @@ checkCapture = function(piece, attackerColor, rolledValue) {
             gameState.canMove = false;
             gameState.diceValue = null;
             document.getElementById('dice-value').textContent = '-';
+            console.log('[DEBUG] Ending turn from checkCapture');
             endTurnMultiplayer();
         }
     }
@@ -456,6 +458,7 @@ movePiece = function(pieceId) {
             const rolledValue = gameState.diceValue;
             
             // Check for capture after moving
+            console.log('[DEBUG] Calling checkCapture after move');
             checkCapture(piece, color, rolledValue);
             return; // Let checkCapture handle turn ending
         }

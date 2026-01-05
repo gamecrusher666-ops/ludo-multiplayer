@@ -180,6 +180,7 @@ io.on('connection', (socket) => {
         if (room) {
             room.gameState.diceValue = diceValue;
             room.gameState.currentPlayer = playerIndex;
+            console.log(`[SERVER] Dice rolled in room ${roomId}: player ${playerIndex} rolled ${diceValue}`);
             io.to(roomId).emit('diceRolled', { diceValue, playerIndex });
         }
     });
@@ -192,6 +193,7 @@ io.on('connection', (socket) => {
             const piece = room.gameState.pieces[color].find(p => p.id === pieceId);
             if (piece) {
                 piece.position = newPosition;
+                console.log(`[SERVER] Move in room ${roomId}: ${color} ${pieceId} -> ${newPosition}`);
                 io.to(roomId).emit('pieceMoved', {
                     pieceId,
                     color,
@@ -228,6 +230,7 @@ io.on('connection', (socket) => {
             room.gameState.currentPlayer = nextPlayerIndex;
             room.gameState.diceValue = null;
             room.gameState.canMove = false;
+            console.log(`[SERVER] Turn end in room ${roomId}: next player ${nextPlayerIndex}`);
             io.to(roomId).emit('turnEnded', { nextPlayerIndex });
         }
     });
