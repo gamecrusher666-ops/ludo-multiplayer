@@ -107,7 +107,7 @@ socket.on('diceRolled', (data) => {
         document.getElementById('dice-value').textContent = data.diceValue;
         document.getElementById('roll-dice').disabled = true;
     } else {
-        document.getElementById('roll-dice').disabled = false;
+        document.getElementById('roll-dice').disabled = true; // disable until move completes
     }
 });
 
@@ -174,12 +174,14 @@ socket.on('turnEnded', (data) => {
         selected.style.boxShadow = '';
     }
     turnDisplay.textContent = `${nextColor.toUpperCase()}'s turn`;
+    turnDisplay.style.color = nextColor;
     document.getElementById('dice-value').textContent = '-';
     
     isLocalPlayer = data.nextPlayerIndex === playerIndex;
     
     if (isLocalPlayer) {
         document.getElementById('roll-dice').disabled = false;
+        console.log('[TURN] roll enabled for local player');
     } else {
         document.getElementById('roll-dice').disabled = true;
     }
@@ -200,6 +202,7 @@ socket.on('disconnect', () => {
 // Override rollDice to emit to server
 const originalRollDice = rollDice;
 rollDice = function() {
+    console.log('[ROLL] attempt. isLocalPlayer:', isLocalPlayer, 'canMove:', gameState.canMove, 'diceValue:', gameState.diceValue, 'currentPlayer:', gameState.currentPlayer);
     if (!isLocalPlayer) {
         console.log('Not your turn');
         return;
