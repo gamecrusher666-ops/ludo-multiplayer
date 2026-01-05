@@ -50,5 +50,11 @@
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
   <script src="ludo.js"></script>
   <script src="multiplayer-client.js"></script>
+  <script>
+    // Initialize multiplayer after all scripts load
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeFromSession();
+    });
+  </script>
 </body>
 </html>

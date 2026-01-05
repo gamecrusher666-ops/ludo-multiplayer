@@ -35,10 +35,12 @@ class GameRoom {
         this.roomId = roomId;
         this.maxPlayers = maxPlayers;
         this.players = [];
+        this.activeColors = ['red', 'blue', 'green', 'yellow'].slice(0, maxPlayers);
         this.gameState = {
             currentPlayer: 0,
             players: ['Red', 'Blue', 'Green', 'Yellow'],
             colors: ['red', 'blue', 'green', 'yellow'],
+            activeColors: this.activeColors,
             canMove: false,
             selectedPiece: null,
             diceValue: null,
@@ -109,6 +111,13 @@ app.post('/api/rooms/create', (req, res) => {
     res.json({ roomId, status: 'created' });
 });
 
+// Debug: Clear all rooms
+app.post('/api/debug/clear-rooms', (req, res) => {
+    const count = gameRooms.size;
+    gameRooms.clear();
+    res.json({ message: `Cleared ${count} rooms` });
+});
+
 // Socket.IO events
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
@@ -140,6 +149,8 @@ io.on('connection', (socket) => {
                 success: true,
                 playerIndex,
                 color: player.color,
+                maxPlayers: room.maxPlayers,
+                activeColors: room.activeColors,
                 gameState: room.gameState,
                 players: room.players.map(p => ({ name: p.name, color: p.color }))
             });

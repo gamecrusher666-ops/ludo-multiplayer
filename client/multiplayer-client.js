@@ -4,12 +4,26 @@ let roomId = null;
 let playerIndex = null;
 let playerColor = null;
 let isLocalPlayer = false;
+let activeColors = []; // Track which colors are in this game
 
 // Get session data
 function initializeFromSession() {
     roomId = sessionStorage.getItem('roomId');
     playerIndex = parseInt(sessionStorage.getItem('playerIndex'));
     playerColor = sessionStorage.getItem('playerColor');
+    
+    // Safely parse activeColors
+    const activeColorsStr = sessionStorage.getItem('activeColors');
+    activeColors = [];
+    if (activeColorsStr && activeColorsStr !== 'undefined') {
+        try {
+            activeColors = JSON.parse(activeColorsStr);
+        } catch (e) {
+            console.error('Failed to parse activeColors:', e);
+            activeColors = [];
+        }
+    }
+    
     const playerName = sessionStorage.getItem('playerName');
     
     if (!roomId || playerIndex === null || !playerColor) {
@@ -17,6 +31,11 @@ function initializeFromSession() {
         window.location.href = 'multiplayer.html';
         return;
     }
+    
+    console.log('Initialized. activeColors:', activeColors, 'playerIndex:', playerIndex);
+    
+    // Now that activeColors is set, create the board with only active pieces
+    createLudoBoard();
     
     // Update player info display
     document.getElementById('player-info').innerHTML = `
@@ -42,6 +61,15 @@ socket.on('gameStart', (data) => {
     const turnDisplay = document.getElementById('turn-display');
     turnDisplay.textContent = `${gameState.players[gameState.currentPlayer]}'s turn`;
     isLocalPlayer = gameState.currentPlayer === playerIndex;
+    
+    // Enable/disable roll button based on whose turn it is
+    if (isLocalPlayer) {
+        document.getElementById('roll-dice').disabled = false;
+    } else {
+        document.getElementById('roll-dice').disabled = true;
+    }
+    
+    console.log('isLocalPlayer:', isLocalPlayer, 'playerIndex:', playerIndex, 'currentPlayer:', gameState.currentPlayer);
 });
 
 socket.on('playerJoined', (data) => {
@@ -112,7 +140,8 @@ socket.on('pieceCaptured', (data) => {
 socket.on('turnEnded', (data) => {
     console.log(`Turn ended, next player: ${data.nextPlayerIndex}`);
     const turnDisplay = document.getElementById('turn-display');
-    turnDisplay.textContent = `${gameState.players[data.nextPlayerIndex]}'s turn`;
+    const nextColor = activeColors[data.nextPlayerIndex] || gameState.colors[data.nextPlayerIndex];
+    turnDisplay.textContent = `${nextColor.toUpperCase()}'s turn`;
     document.getElementById('dice-value').textContent = '-';
     
     isLocalPlayer = data.nextPlayerIndex === playerIndex;
@@ -208,12 +237,12 @@ function endTurnMultiplayer() {
     const turnDisplay = document.getElementById('turn-display');
     const diceDisplay = document.getElementById('dice-value');
     
-    // Move to next player
-    const nextPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
+    // Move to next active player
+    let nextPlayer = (gameState.currentPlayer + 1) % activeColors.length;
     gameState.currentPlayer = nextPlayer;
     
-    turnDisplay.textContent = `${gameState.players[gameState.currentPlayer]}'s turn`;
-    turnDisplay.style.color = gameState.colors[gameState.currentPlayer];
+    turnDisplay.textContent = `${gameState.players[nextPlayer]}'s turn`;
+    turnDisplay.style.color = gameState.colors[nextPlayer];
     diceDisplay.textContent = '-';
     
     // Emit to server

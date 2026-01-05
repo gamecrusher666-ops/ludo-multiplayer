@@ -110,6 +110,7 @@
         <div class="form-group">
           <label>Players</label>
           <select id="playerCount">
+            <option value="1">1 Player</option>
             <option value="2">2 Players</option>
             <option value="3">3 Players</option>
             <option value="4" selected>4 Players</option>
@@ -187,6 +188,7 @@
           sessionStorage.setItem('playerName', playerName);
           sessionStorage.setItem('playerIndex', response.playerIndex);
           sessionStorage.setItem('playerColor', response.color);
+          sessionStorage.setItem('activeColors', JSON.stringify(response.activeColors));
           sessionStorage.setItem('gameState', JSON.stringify(response.gameState));
           sessionStorage.setItem('players', JSON.stringify(response.players));
           

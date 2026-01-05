@@ -1,7 +1,12 @@
 // Cleaned: all logic is inside DOMContentLoaded and createLudoBoard below
 /* Ludo board rendering and basic logic */
 
-document.addEventListener('DOMContentLoaded', createLudoBoard);
+// Don't auto-create board on multiplayer pages; multiplayer-client.js will call it after initialization
+const isMultiplayer = document.getElementById('game-multiplayer') !== null;
+
+if (!isMultiplayer) {
+    document.addEventListener('DOMContentLoaded', createLudoBoard);
+}
 
 // Game state
 const gameState = {
@@ -55,7 +60,7 @@ function createLudoBoard() {
             td.dataset.x = x;
             td.dataset.y = y;
 
-            // Color home areas (swap blue and red)
+            // Color home areas (always show all 4 areas)
             if (x < 6 && y < 6) {
                 td.style.background = '#2980b9'; // Blue home (bottom left)
                 td.style.border = '2px solid #1f5a8a'; // Darker blue border
@@ -121,29 +126,37 @@ function createLudoBoard() {
 
     board.appendChild(table);
 
-    // Draw red pins (top left home)
-    drawPin(1, 10, 'red', 'red0');
-    drawPin(1, 13, 'red', 'red1');
-    drawPin(4, 10, 'red', 'red2');
-    drawPin(4, 13, 'red', 'red3');
+    // Draw red pins (top left home) - only if red is active
+    if (typeof activeColors === 'undefined' || activeColors.includes('red')) {
+        drawPin(1, 10, 'red', 'red0');
+        drawPin(1, 13, 'red', 'red1');
+        drawPin(4, 10, 'red', 'red2');
+        drawPin(4, 13, 'red', 'red3');
+    }
 
-    // Draw blue pins (bottom left home)
-    drawPin(1, 1, 'blue', 'blue0');
-    drawPin(1, 4, 'blue', 'blue1');
-    drawPin(4, 1, 'blue', 'blue2');
-    drawPin(4, 4, 'blue', 'blue3');
+    // Draw blue pins (bottom left home) - only if blue is active
+    if (typeof activeColors === 'undefined' || activeColors.includes('blue')) {
+        drawPin(1, 1, 'blue', 'blue0');
+        drawPin(1, 4, 'blue', 'blue1');
+        drawPin(4, 1, 'blue', 'blue2');
+        drawPin(4, 4, 'blue', 'blue3');
+    }
 
-    // Draw green pins (bottom right home)
-    drawPin(10, 1, 'green', 'green0');
-    drawPin(10, 4, 'green', 'green1');
-    drawPin(13, 1, 'green', 'green2');
-    drawPin(13, 4, 'green', 'green3');
+    // Draw green pins (bottom right home) - only if green is active
+    if (typeof activeColors === 'undefined' || activeColors.includes('green')) {
+        drawPin(10, 1, 'green', 'green0');
+        drawPin(10, 4, 'green', 'green1');
+        drawPin(13, 1, 'green', 'green2');
+        drawPin(13, 4, 'green', 'green3');
+    }
 
-    // Draw yellow pins (top right home)
-    drawPin(10, 10, 'yellow', 'yellow0');
-    drawPin(10, 13, 'yellow', 'yellow1');
-    drawPin(13, 10, 'yellow', 'yellow2');
-    drawPin(13, 13, 'yellow', 'yellow3');
+    // Draw yellow pins (top right home) - only if yellow is active
+    if (typeof activeColors === 'undefined' || activeColors.includes('yellow')) {
+        drawPin(10, 10, 'yellow', 'yellow0');
+        drawPin(10, 13, 'yellow', 'yellow1');
+        drawPin(13, 10, 'yellow', 'yellow2');
+        drawPin(13, 13, 'yellow', 'yellow3');
+    }
 
     function drawPin(x, y, color, id) {
         const rowIndex = table.rows.length - 1 - y; // map y=0 bottom to bottom row
