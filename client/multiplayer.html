@@ -140,6 +140,12 @@
     </div>
   </div>
 
+  <div style="text-align: center; margin-top: 30px; padding: 20px; background: #2c3139; border-radius: 5px;">
+    <button onclick="clearAllRooms()" style="background: #ff4444; padding: 10px 20px; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold;">
+      DEBUG: Clear All Rooms
+    </button>
+  </div>
+
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
   <script>
     const socket = io();
@@ -251,6 +257,18 @@
     // Load rooms on page load and refresh every 5 seconds
     loadRooms();
     setInterval(loadRooms, 5000);
+
+    function clearAllRooms() {
+      if (confirm('Clear all active games?')) {
+        fetch(`${API_URL}/api/debug/clear-rooms`, { method: 'POST' })
+          .then(r => r.json())
+          .then(data => {
+            alert(data.message);
+            loadRooms();
+          })
+          .catch(e => alert('Error: ' + e.message));
+      }
+    }
   </script>
 </body>
 </html>

@@ -90,13 +90,14 @@ socket.on('diceRolled', (data) => {
 });
 
 socket.on('pieceMoved', (data) => {
-    console.log(`${data.color} piece moved to position ${data.newPosition}`);
+    console.log(`[SYNC] ${data.color} piece moved to position ${data.newPosition}`);
     if (data.color !== playerColor) {
         // Another player's piece moved - visual update needed
         const piece = gameState.pieces[data.color].find(p => p.id === data.pieceId);
         if (piece) {
             piece.position = data.newPosition;
             updatePiecePosition(piece, data.color);
+            console.log(`[SYNC] Updated opponent piece visually`);
         }
     }
 });
@@ -421,6 +422,7 @@ movePiece = function(pieceId) {
         piece.position = target;
         
         // Emit move to server
+        console.log(`[EMIT] Moving ${color} piece ${pieceId} to position ${target}`);
         socket.emit('movePiece', {
             roomId,
             pieceId,
