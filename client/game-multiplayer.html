@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ludo Online - Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Ludo Online - Multiplayer Game</h1>
+  <div id="game-info">
+    <div id="player-info"></div>
+    <div id="turn-display">Waiting for players...</div>
+    <button id="roll-dice">Roll Dice 🎲</button>
+    <div id="dice-value">-</div>
+    <button id="leave-game" style="margin-top: 10px; background: #ff4444;">Leave Game</button>
+  </div>
+  
+  <div id="debug-panel">
+    <h3>Debug Move</h3>
+    <label>
+      <input type="checkbox" id="debug-dice-toggle">
+      Force Roll 1
+    </label>
+    <select id="debug-piece">
+      <option value="">Select piece...</option>
+      <option value="red0">Red 0</option>
+      <option value="red1">Red 1</option>
+      <option value="red2">Red 2</option>
+      <option value="red3">Red 3</option>
+      <option value="blue0">Blue 0</option>
+      <option value="blue1">Blue 1</option>
+      <option value="blue2">Blue 2</option>
+      <option value="blue3">Blue 3</option>
+      <option value="green0">Green 0</option>
+      <option value="green1">Green 1</option>
+      <option value="green2">Green 2</option>
+      <option value="green3">Green 3</option>
+      <option value="yellow0">Yellow 0</option>
+      <option value="yellow1">Yellow 1</option>
+      <option value="yellow2">Yellow 2</option>
+      <option value="yellow3">Yellow 3</option>
+    </select>
+    <input type="number" id="debug-x" placeholder="X (0-14)" min="0" max="14">
+    <input type="number" id="debug-y" placeholder="Y (0-14)" min="0" max="14">
+    <button id="debug-move-btn">Move Here</button>
+  </div>
+  
+  <div id="board">Ludo board placeholder</div>
+  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+  <script src="ludo.js"></script>
+  <script src="multiplayer-client.js"></script>
+</body>
+</html>

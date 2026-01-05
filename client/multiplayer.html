@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ludo Online - Multiplayer</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .room-container {
+      display: flex;
+      gap: 40px;
+      margin: 40px auto;
+      max-width: 1000px;
+    }
+    .room-section {
+      flex: 1;
+      background: #2c3139;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .room-section h2 {
+      margin-top: 0;
+      color: #5865f2;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      background: #23272e;
+      color: #f0f0f0;
+      border: 1px solid #444;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #5865f2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #4752c4;
+    }
+    button:active {
+      transform: scale(0.95);
+    }
+    .rooms-list {
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .room-card {
+      background: #1e2227;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border-left: 4px solid #5865f2;
+    }
+    .room-card .room-info {
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .room-card .room-id {
+      font-weight: bold;
+      color: #ffd700;
+      margin-bottom: 5px;
+    }
+    .room-card .player-count {
+      color: #aaa;
+      margin-bottom: 5px;
+    }
+    .room-card .join-btn {
+      padding: 8px;
+      font-size: 14px;
+    }
+    .loading {
+      text-align: center;
+      color: #aaa;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎲 Ludo Online - Multiplayer</h1>
+  
+  <div class="room-container">
+    <!-- Create Room Section -->
+    <div class="room-section">
+      <h2>Create Room</h2>
+      <form id="createRoomForm">
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="playerName" placeholder="Enter your name" required>
+        </div>
+        <div class="form-group">
+          <label>Players</label>
+          <select id="playerCount">
+            <option value="2">2 Players</option>
+            <option value="3">3 Players</option>
+            <option value="4" selected>4 Players</option>
+          </select>
+        </div>
+        <button type="submit">Create Room</button>
+      </form>
+    </div>
+
+    <!-- Join Room Section -->
+    <div class="room-section">
+      <h2>Join Room</h2>
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" id="joinPlayerName" placeholder="Enter your name" required>
+      </div>
+      <div class="form-group">
+        <label>Room ID</label>
+        <input type="text" id="roomIdInput" placeholder="Enter room ID">
+      </div>
+      <button id="manualJoinBtn">Join by ID</button>
+      
+      <h3 style="margin-top: 30px; color: #aaa;">Available Rooms</h3>
+      <div id="roomsList" class="rooms-list">
+        <div class="loading">Loading rooms...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+    const API_URL = window.location.origin;
+
+    // Create room form
+    document.getElementById('createRoomForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const playerName = document.getElementById('playerName').value;
+      const playerCount = document.getElementById('playerCount').value;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/rooms/create?players=${playerCount}`, {
+          method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (data.roomId) {
+          // Join the room we just created
+          joinRoom(data.roomId, playerName);
+        }
+      } catch (error) {
+        alert('Error creating room: ' + error.message);
+      }
+    });
+
+    // Manual join
+    document.getElementById('manualJoinBtn').addEventListener('click', () => {
+      const roomId = document.getElementById('roomIdInput').value.trim();
+      const playerName = document.getElementById('joinPlayerName').value.trim();
+      
+      if (!roomId || !playerName) {
+        alert('Please enter room ID and your name');
+        return;
+      }
+      
+      joinRoom(roomId, playerName);
+    });
+
+    function joinRoom(roomId, playerName) {
+      socket.emit('joinRoom', { roomId, playerName }, (response) => {
+        if (response.success) {
+          // Store game info and redirect to game
+          sessionStorage.setItem('roomId', roomId);
+          sessionStorage.setItem('playerName', playerName);
+          sessionStorage.setItem('playerIndex', response.playerIndex);
+          sessionStorage.setItem('playerColor', response.color);
+          sessionStorage.setItem('gameState', JSON.stringify(response.gameState));
+          sessionStorage.setItem('players', JSON.stringify(response.players));
+          
+          window.location.href = 'game-multiplayer.html';
+        } else {
+          alert('Could not join room: ' + response.error);
+        }
+      });
+    }
+
+    // Load available rooms
+    async function loadRooms() {
+      try {
+        const response = await fetch(`${API_URL}/api/rooms`);
+        const rooms = await response.json();
+        
+        const roomsList = document.getElementById('roomsList');
+        
+        if (rooms.length === 0) {
+          roomsList.innerHTML = '<div class="loading">No available rooms</div>';
+          return;
+        }
+        
+        roomsList.innerHTML = rooms
+          .filter(room => room.status === 'waiting' && room.currentPlayers < room.maxPlayers)
+          .map(room => `
+            <div class="room-card">
+              <div class="room-id">Room: ${room.roomId}</div>
+              <div class="room-info">
+                <div class="player-count">Players: ${room.currentPlayers}/${room.maxPlayers}</div>
+                <div>${room.players.map(p => `<span style="color: ${getColorCode(p.color)}">${p.name}</span>`).join(', ')}</div>
+              </div>
+              <button class="join-btn" onclick="joinRoomFromList('${room.roomId}')">Join</button>
+            </div>
+          `).join('');
+      } catch (error) {
+        console.error('Error loading rooms:', error);
+      }
+    }
+
+    function joinRoomFromList(roomId) {
+      const playerName = document.getElementById('joinPlayerName').value.trim();
+      if (!playerName) {
+        alert('Please enter your name first');
+        return;
+      }
+      joinRoom(roomId, playerName);
+    }
+
+    function getColorCode(color) {
+      const colors = {
+        red: '#ff4444',
+        blue: '#4488ff',
+        green: '#44ff44',
+        yellow: '#ffff44'
+      };
+      return colors[color] || '#fff';
+    }
+
+    // Load rooms on page load and refresh every 5 seconds
+    loadRooms();
+    setInterval(loadRooms, 5000);
+  </script>
+</body>
+</html>
