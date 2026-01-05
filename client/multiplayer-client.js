@@ -34,6 +34,24 @@ function initializeFromSession() {
     
     console.log('Initialized. activeColors:', activeColors, 'playerIndex:', playerIndex);
     
+    // Rejoin the socket room without adding a new player
+    socket.emit('rejoinRoom', { roomId }, (resp) => {
+        if (!resp || !resp.success) {
+            alert('Failed to rejoin room');
+            return;
+        }
+        // Sync game state from server
+        if (resp.gameState) {
+            gameState.currentPlayer = resp.gameState.currentPlayer;
+            gameState.diceValue = resp.gameState.diceValue;
+            gameState.canMove = resp.gameState.canMove;
+        }
+        if (resp.activeColors && resp.activeColors.length) {
+            activeColors = resp.activeColors;
+        }
+        console.log('[REJOIN] Joined room, currentPlayer:', gameState.currentPlayer, 'activeColors:', activeColors);
+    });
+
     // Now that activeColors is set, create the board with only active pieces
     createLudoBoard();
     
@@ -80,12 +98,16 @@ socket.on('playerJoined', (data) => {
 
 socket.on('diceRolled', (data) => {
     console.log(`Player ${data.playerIndex} rolled a ${data.diceValue}`);
+    gameState.currentPlayer = data.playerIndex;
+    gameState.diceValue = data.diceValue;
     if (data.playerIndex !== playerIndex) {
         // Another player rolled, show their roll
         const turnDisplay = document.getElementById('turn-display');
         turnDisplay.textContent = `${gameState.players[data.playerIndex]} rolled ${data.diceValue}`;
         document.getElementById('dice-value').textContent = data.diceValue;
-        gameState.diceValue = data.diceValue;
+        document.getElementById('roll-dice').disabled = true;
+    } else {
+        document.getElementById('roll-dice').disabled = false;
     }
 });
 
@@ -153,6 +175,7 @@ socket.on('turnEnded', (data) => {
     } else {
         document.getElementById('roll-dice').disabled = true;
     }
+    console.log('[TURN] currentPlayer set to', gameState.currentPlayer, 'isLocalPlayer', isLocalPlayer);
 });
 
 socket.on('connect_error', (error) => {

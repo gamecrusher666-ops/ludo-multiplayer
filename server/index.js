@@ -122,6 +122,24 @@ app.post('/api/debug/clear-rooms', (req, res) => {
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
+    // Allow game page to rejoin the room without adding a new player
+    socket.on('rejoinRoom', (data, callback) => {
+        const { roomId } = data;
+        const room = gameRooms.get(roomId);
+        if (!room) {
+            callback({ success: false, error: 'Room not found' });
+            return;
+        }
+        socket.join(roomId);
+        console.log(`[SERVER] Socket ${socket.id} rejoined room ${roomId}`);
+        callback({
+            success: true,
+            gameState: room.gameState,
+            activeColors: room.activeColors,
+            players: room.players.map(p => ({ name: p.name, color: p.color }))
+        });
+    });
+
     // Join a game room
     socket.on('joinRoom', (data, callback) => {
         const { roomId, playerName } = data;
