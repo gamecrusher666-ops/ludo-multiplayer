@@ -10,6 +10,13 @@ const io = new Server(server, { cors: { origin: '*' } });
 
 app.use(express.static('../client'));
 
+// Redirect root to the multiplayer lobby and quiet favicon 404s
+app.get('/', (req, res) => {
+    res.redirect('/multiplayer.html');
+});
+
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // Game rooms storage
 const gameRooms = new Map();
 
