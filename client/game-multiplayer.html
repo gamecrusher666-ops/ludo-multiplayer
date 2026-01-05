@@ -44,6 +44,7 @@
     <input type="number" id="debug-x" placeholder="X (0-14)" min="0" max="14">
     <input type="number" id="debug-y" placeholder="Y (0-14)" min="0" max="14">
     <button id="debug-move-btn">Move Here</button>
+    <button id="force-roll-6" style="margin-left: 10px;">Force Roll 6</button>
   </div>
   
   <div id="board">Ludo board placeholder</div>
@@ -54,6 +55,17 @@
     // Initialize multiplayer after all scripts load
     document.addEventListener('DOMContentLoaded', function() {
       initializeFromSession();
+      const force6 = document.getElementById('force-roll-6');
+      if (force6) {
+        force6.addEventListener('click', () => {
+          if (!isLocalPlayer) return;
+          gameState.debugDiceMode = true;
+          gameState.debugDiceValue = 6;
+          rollDice();
+          delete gameState.debugDiceValue;
+          gameState.debugDiceMode = false;
+        });
+      }
     });
   </script>
 </body>

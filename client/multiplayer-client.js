@@ -165,6 +165,14 @@ socket.on('turnEnded', (data) => {
     const turnDisplay = document.getElementById('turn-display');
     const nextColor = activeColors[data.nextPlayerIndex] || gameState.colors[data.nextPlayerIndex];
     gameState.currentPlayer = data.nextPlayerIndex; // keep local state in sync
+    gameState.diceValue = null;
+    gameState.canMove = false;
+    gameState.selectedPiece = null;
+    const selected = document.querySelector('.game-piece.selected');
+    if (selected) {
+        selected.classList.remove('selected');
+        selected.style.boxShadow = '';
+    }
     turnDisplay.textContent = `${nextColor.toUpperCase()}'s turn`;
     document.getElementById('dice-value').textContent = '-';
     
@@ -202,7 +210,8 @@ rollDice = function() {
         return;
     }
     
-    const diceValue = gameState.debugDiceMode ? 1 : (Math.floor(Math.random() * 6) + 1);
+    const diceValue = (gameState.debugDiceMode && gameState.debugDiceValue) ? gameState.debugDiceValue :
+        (gameState.debugDiceMode ? 1 : (Math.floor(Math.random() * 6) + 1));
     gameState.diceValue = diceValue;
     
     // Emit to server
